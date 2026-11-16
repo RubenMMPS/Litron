@@ -50,17 +50,22 @@ class Vault:
         return path.relative_to(self.root).as_posix()
 
     def search(self, query, limit=15):
-        needle = query.lower().strip()
-        if not needle:
+        words = query.lower().split()
+        if not words:
             return []
         results = []
         for note in self.list_notes():
             text = self._resolve(note).read_text(encoding="utf-8")
-            for number, line in enumerate(text.splitlines(), start=1):
-                if needle in line.lower():
-                    results.append(f"{note}:{number}: {line.strip()}")
-                    if len(results) >= limit:
-                        return results
+            haystack = (note + "\n" + text).lower()
+            if not all(word in haystack for word in words):
+                continue
+            snippet = next(
+                (line.strip() for line in text.splitlines() if any(w in line.lower() for w in words)),
+                "",
+            )
+            results.append(f"{note}: {snippet}")
+            if len(results) >= limit:
+                break
         return results
 
     def links(self, name):
