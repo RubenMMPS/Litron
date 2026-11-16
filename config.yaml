@@ -1,0 +1,7 @@
+model: openai/google/gemma-4-e4b
+api_base: http://localhost:1234/v1
+temperature: null
+max_steps: 8
+vault_path: vault
+skills_path: skills
+index_note: index
