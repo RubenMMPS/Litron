@@ -94,23 +94,25 @@ class Agent:
 
     def dispatch(self, name, args):
         try:
-            if name == "list_notes":
-                return "\n".join(self.vault.list_notes()) or "(sin notas)"
-            if name == "read_note":
-                return self.vault.read(args["name"])
-            if name == "search_notes":
-                return "\n".join(self.vault.search(args["query"])) or "(sin resultados)"
-            if name == "note_links":
-                out = self.vault.links(args["name"])
-                back = self.vault.backlinks(args["name"])
-                return json.dumps({"enlaza_a": out, "enlazada_desde": back}, ensure_ascii=False)
-            if name == "write_note":
-                return "guardada: " + self.vault.write(args["name"], args["content"])
-            if name == "append_note":
-                return "añadido a: " + self.vault.append(args["name"], args["content"])
-            if name == "load_skill":
-                return self.skills.load(args["name"])
-            return f"herramienta desconocida: {name}"
+            match name:
+                case "list_notes":
+                    return "\n".join(self.vault.list_notes()) or "(sin notas)"
+                case "read_note":
+                    return self.vault.read(args["name"])
+                case "search_notes":
+                    return "\n".join(self.vault.search(args["query"])) or "(sin resultados)"
+                case "note_links":
+                    out = self.vault.links(args["name"])
+                    back = self.vault.backlinks(args["name"])
+                    return json.dumps({"enlaza_a": out, "enlazada_desde": back}, ensure_ascii=False)
+                case "write_note":
+                    return "guardada: " + self.vault.write(args["name"], args["content"])
+                case "append_note":
+                    return "añadido a: " + self.vault.append(args["name"], args["content"])
+                case "load_skill":
+                    return self.skills.load(args["name"])
+                case _:
+                    return f"herramienta desconocida: {name}"
         except Exception as error:
             return f"error: {error}"
 
