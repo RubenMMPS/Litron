@@ -1,6 +1,7 @@
-model: openai/google/gemma-4-e4b
-api_base: http://localhost:1234/v1
-temperature: null
+models:
+  - name: openai/google/gemma-4-e4b
+    api_base: http://localhost:1234/v1
+  - name: gemini/gemini-3.6-flash
 max_steps: 8
 vault_path: vault
 skills_path: skills

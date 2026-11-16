@@ -7,6 +7,15 @@ from .memory import Vault
 from .skills import Skills
 
 litellm.drop_params = True
+litellm.suppress_debug_info = True
+
+FALLBACK_ERRORS = (
+    litellm.ServiceUnavailableError,
+    litellm.RateLimitError,
+    litellm.Timeout,
+    litellm.APIConnectionError,
+    litellm.InternalServerError,
+)
 
 
 def tool(name, description, properties, required):
@@ -81,6 +90,7 @@ class Agent:
         self.vault = Vault(base_dir / config["vault_path"])
         self.skills = Skills(base_dir / config["skills_path"])
         self.messages = []
+        self.last_model = None
         self.reset()
 
     def system_prompt(self):
@@ -119,16 +129,27 @@ class Agent:
             return f"error: {error}"
 
     def complete(self):
-        kwargs = {
-            "model": self.config["model"],
-            "messages": self.messages,
-            "tools": TOOLS,
-        }
-        if self.config.get("temperature") is not None:
-            kwargs["temperature"] = self.config["temperature"]
-        if self.config.get("api_base"):
-            kwargs["api_base"] = self.config["api_base"]
-        return litellm.completion(**kwargs).choices[0].message
+        last_error = None
+        for entry in self.config["models"]:
+            kwargs = {
+                "model": entry["name"],
+                "messages": self.messages,
+                "tools": TOOLS,
+                "timeout": entry.get("timeout", 60),
+                "num_retries": 0,
+            }
+            if entry.get("temperature") is not None:
+                kwargs["temperature"] = entry["temperature"]
+            if entry.get("api_base"):
+                kwargs["api_base"] = entry["api_base"]
+            try:
+                message = litellm.completion(**kwargs).choices[0].message
+            except FALLBACK_ERRORS as error:
+                last_error = error
+                continue
+            self.last_model = entry["name"]
+            return message
+        raise last_error
 
     def run(self, user_text, on_tool=None):
         self.messages.append({"role": "user", "content": user_text})

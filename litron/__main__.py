@@ -23,7 +23,7 @@ def main():
     load_dotenv(BASE_DIR / ".env")
     agent = Agent(load_config(), BASE_DIR)
 
-    print(f"Litron listo con {agent.config['model']}. Comandos: /reset, /notas, /skills, /salir")
+    print(f"Litron listo con {agent.config['models'][0]['name']}. Comandos: /reset, /notas, /skills, /salir")
 
     while True:
         try:
@@ -52,7 +52,10 @@ def main():
 
             case _:
                 try:
-                    print("\nLitron > " + agent.run(text, on_tool=show_tool))
+                    reply = agent.run(text, on_tool=show_tool)
+                    print("\nLitron > " + reply)
+                    if agent.last_model != agent.config["models"][0]["name"]:
+                        print(f"  (respondió {agent.last_model})")
                 except Exception as error:
                     print(f"Error: {error}", file=sys.stderr)
 
