@@ -22,32 +22,39 @@ def show_tool(name, args):
 def main():
     load_dotenv(BASE_DIR / ".env")
     agent = Agent(load_config(), BASE_DIR)
+
     print(f"Litron listo con {agent.config['model']}. Comandos: /reset, /notas, /skills, /salir")
+
     while True:
         try:
             text = input("\nTú > ").strip()
         except (EOFError, KeyboardInterrupt):
             print()
             break
+
         if not text:
             continue
-        if text == "/salir":
-            break
-        if text == "/reset":
-            agent.reset()
-            print("Conversación reiniciada.")
-            continue
-        if text == "/notas":
-            print("\n".join(agent.vault.list_notes()) or "(sin notas)")
-            continue
-        if text == "/skills":
-            for item in agent.skills.catalog():
-                print(f"- {item['name']}: {item['description']}")
-            continue
-        try:
-            print("\nLitron > " + agent.run(text, on_tool=show_tool))
-        except Exception as error:
-            print(f"Error: {error}", file=sys.stderr)
+
+        match text:
+            case "/salir":
+                break
+
+            case "/reset":
+                agent.reset()
+                print("Conversación reiniciada.")
+
+            case "/notas":
+                print("\n".join(agent.vault.list_notes()) or "(sin notas)")
+
+            case "/skills":
+                for item in agent.skills.catalog():
+                    print(f"- {item['name']}: {item['description']}")
+
+            case _:
+                try:
+                    print("\nLitron > " + agent.run(text, on_tool=show_tool))
+                except Exception as error:
+                    print(f"Error: {error}", file=sys.stderr)
 
 
 if __name__ == "__main__":
