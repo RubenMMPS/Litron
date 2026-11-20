@@ -1,6 +1,7 @@
 models:
   - name: openai/google/gemma-4-e4b
     api_base: http://localhost:1234/v1
+  - name: groq/openai/gpt-oss-20b
   - name: gemini/gemini-3.6-flash
 max_steps: 8
 vault_path: vault
